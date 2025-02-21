@@ -354,7 +354,6 @@ class MotionEncoderBiGRUCo(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, device):
         super(MotionEncoderBiGRUCo, self).__init__()
         self.device = device
-
         self.input_emb = nn.Linear(input_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True, bidirectional=True)
         self.output_net = nn.Sequential(
@@ -372,15 +371,12 @@ class MotionEncoderBiGRUCo(nn.Module):
     # input(batch_size, seq_len, dim)
     def forward(self, inputs, m_lens):
         num_samples = inputs.shape[0]
-
         input_embs = self.input_emb(inputs)
         hidden = self.hidden.repeat(1, num_samples, 1)
-
         cap_lens = m_lens.data.tolist()
         emb = pack_padded_sequence(input_embs, cap_lens, batch_first=True)
 
         gru_seq, gru_last = self.gru(emb, hidden)
-
         gru_last = torch.cat([gru_last[0], gru_last[1]], dim=-1)
 
         return self.output_net(gru_last)

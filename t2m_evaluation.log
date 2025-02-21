@@ -1,0 +1,50 @@
+Time: 2025-02-18 07:33:05.306199
+Time: 2025-02-18 07:33:21.009917
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] FID: 0.2172
+Time: 2025-02-18 07:33:24.091740
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Diversity: 4.9128
+Time: 2025-02-18 07:33:24.092951
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Multimodality: 4.9646
+!!! DONE !!!
+Time: 2025-02-18 07:33:39.406624
+Time: 2025-02-18 07:33:41.927964
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] FID: 0.1240
+Time: 2025-02-18 07:33:44.789459
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Diversity: 4.2724
+Time: 2025-02-18 07:33:44.790073
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Multimodality: 4.5717
+!!! DONE !!!
+Time: 2025-02-18 07:34:00.330171
+Time: 2025-02-18 07:34:02.416896
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] FID: 0.1621
+Time: 2025-02-18 07:34:05.391196
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Diversity: 4.1343
+Time: 2025-02-18 07:34:05.392165
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Multimodality: 3.9620
+!!! DONE !!!
+Time: 2025-02-18 07:34:21.417556
+Time: 2025-02-18 07:34:23.094136
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] FID: 0.1396
+Time: 2025-02-18 07:34:25.993066
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Diversity: 4.5038
+Time: 2025-02-18 07:34:25.994004
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Multimodality: 3.8195
+!!! DONE !!!
+Time: 2025-02-18 07:34:40.129577
+Time: 2025-02-18 07:34:41.544422
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] FID: 0.1902
+Time: 2025-02-18 07:34:43.494462
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Diversity: 4.6593
+Time: 2025-02-18 07:34:43.495133
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Multimodality: 4.4019
+!!! DONE !!!
+========== Matching Score Summary ==========
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Mean: 7.5601 CInterval: 0.0268
+========== R_precision Summary ==========
+---> [amass_1000_hu_sft_union15_1-17-3-51-1](top 1) Mean: 0.0929 CInt: 0.0085;(top 2) Mean: 0.1712 CInt: 0.0111;(top 3) Mean: 0.2416 CInt: 0.0125;
+========== FID Summary ==========
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Mean: 0.1666 CInterval: 0.0295
+========== Diversity Summary ==========
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Mean: 4.4965 CInterval: 0.2421
+========== MultiModality Summary ==========
+---> [amass_1000_hu_sft_union15_1-17-3-51-1] Mean: 4.3439 CInterval: 0.3638

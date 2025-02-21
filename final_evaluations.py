@@ -40,14 +40,14 @@ def evaluate_matching_score(motion_loaders, file):
         # print(motion_loader_name)
         with torch.no_grad():
             for idx, batch in enumerate(motion_loader):
-                word_embeddings, pos_one_hots, _, sent_lens, motions, m_lens, _ = batch
+                word_embeddings, pos_one_hots, _, sent_lens, motions, m_lens, _ = batch #word_embeddings [3, 22, 300], motions [3, 196, 251]
                 text_embeddings, motion_embeddings = eval_wrapper.get_co_embeddings(
                     word_embs=word_embeddings,
                     pos_ohot=pos_one_hots,
                     cap_lens=sent_lens,
                     motions=motions,
                     m_lens=m_lens
-                )
+                )  #motion_embeddings [3,512]
                 dist_mat = euclidean_distance_matrix(text_embeddings.cpu().numpy(),
                                                      motion_embeddings.cpu().numpy())
                 matching_score_sum += dist_mat.trace()
@@ -125,12 +125,14 @@ def evaluate_multimodality(mm_motion_loaders, file):
             for idx, batch in enumerate(mm_motion_loader):
                 # (1, mm_replications, dim_pos)
                 motions, m_lens = batch
-                motion_embedings = eval_wrapper.get_motion_embeddings(motions[0], m_lens[0])
-                mm_motion_embeddings.append(motion_embedings.unsqueeze(0))
+                motion_embeddings = eval_wrapper.get_motion_embeddings(motions[0], m_lens[0])#[30,512]
+                print('motion embeddings', motion_embeddings.shape)
+                mm_motion_embeddings.append(motion_embeddings.unsqueeze(0))
         if len(mm_motion_embeddings) == 0:
             multimodality = 0
         else:
-            mm_motion_embeddings = torch.cat(mm_motion_embeddings, dim=0).cpu().numpy()
+            mm_motion_embeddings = torch.cat(mm_motion_embeddings, dim=0).cpu().numpy() #[128,30,512]
+            print("mm motion embeddings ", mm_motion_embeddings.shape)
             multimodality = calculate_multimodality(mm_motion_embeddings, mm_num_times)
         print(f'---> [{model_name}] Multimodality: {multimodality:.4f}')
         print(f'---> [{model_name}] Multimodality: {multimodality:.4f}', file=file, flush=True)
@@ -290,11 +292,12 @@ if __name__ == '__main__':
         # ),
     }
 
-    device_id = 3
+    device_id = 0
     device = torch.device('cuda:%d'%device_id if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(device_id)
 
-    mm_num_samples = 100
+    #mm_num_samples = 100
+    mm_num_samples = 128 
     # mm_num_samples = 0
 
     mm_num_repeats = 30
@@ -302,7 +305,7 @@ if __name__ == '__main__':
 
     diversity_times = 300
     replication_times = 20
-    batch_size = 32
+    batch_size = 128
 
 
     # mm_num_samples = 20
@@ -311,6 +314,7 @@ if __name__ == '__main__':
     # batch_size = 1
 
     gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, batch_size, device)
+    print('gt_dataset....', len(gt_dataset))
     wrapper_opt = get_opt(dataset_opt_path, device)
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
 

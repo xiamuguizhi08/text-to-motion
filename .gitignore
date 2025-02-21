@@ -4,3 +4,11 @@ __pycache__/
 *$py.class
 
 eval_results/*
+
+data/*
+dataset/*
+docs/*
+checkpoints/*
+human_labeling15/*
+log/*
+glove/*

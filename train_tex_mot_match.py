@@ -23,10 +23,10 @@ def build_models(opt):
                                       hidden_size=opt.dim_motion_hidden,
                                       output_size=opt.dim_coemb_hidden,
                                       device=opt.device)
-    if not opt.is_continue:
-       checkpoint = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, opt.decomp_name, 'model', 'latest.tar'),
-                               map_location=opt.device)
-       movement_enc.load_state_dict(checkpoint['movement_enc'])
+    # if not opt.is_continue:
+    #    checkpoint = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, opt.decomp_name, 'model', 'latest.tar'),
+    #                            map_location=opt.device)
+    #    movement_enc.load_state_dict(checkpoint['movement_enc'])
     return text_enc, motion_enc, movement_enc
 
 
@@ -44,6 +44,7 @@ if __name__ == '__main__':
     opt.model_dir = pjoin(opt.save_root, 'model')
     opt.log_dir = pjoin('./log', opt.dataset_name, opt.name)
     opt.eval_dir = pjoin(opt.save_root, 'eval')
+    opt.is_continue = False 
 
     os.makedirs(opt.model_dir, exist_ok=True)
     os.makedirs(opt.eval_dir, exist_ok=True)
@@ -51,11 +52,12 @@ if __name__ == '__main__':
 
     if opt.dataset_name == 't2m':
         opt.data_root = './dataset/HumanML3D'
-        opt.motion_dir = pjoin(opt.data_root, 'new_joint_vecs')
+        opt.motion_dir = pjoin(opt.data_root, 'new_15_joint_vecs')
+        # opt.motion_dir = pjoin(opt.data_root, 'new_joint_vecs')
         opt.text_dir = pjoin(opt.data_root, 'texts')
-        opt.joints_num = 22
+        opt.joints_num =15  #22
         opt.max_motion_length = 196
-        dim_pose = 263
+        dim_pose = 179 # 263
         num_classes = 200 // opt.unit_length
         meta_root = pjoin(opt.checkpoints_dir, opt.dataset_name, 'Comp_v6_KLD01', 'meta')
     elif opt.dataset_name == 'kit':
@@ -75,11 +77,12 @@ if __name__ == '__main__':
     dim_word = 300
     dim_pos_ohot = len(POS_enumerator)
 
-    mean = np.load(pjoin(meta_root, 'mean.npy'))
-    std = np.load(pjoin(meta_root, 'std.npy'))
+    mean = np.load(pjoin(meta_root, 'mean_15joints.npy'))
+    std = np.load(pjoin(meta_root, 'std_15joints.npy'))
 
     w_vectorizer = WordVectorizer('./glove', 'our_vab')
-    train_split_file = pjoin(opt.data_root, 'train.txt')
+    train_split_file = pjoin(opt.data_root, 'train_15joints.txt')
+    # train_split_file = pjoin(opt.data_root, 'train.txt')
     val_split_file = pjoin(opt.data_root, 'val.txt')
 
     text_encoder, motion_encoder, movement_encoder = build_models(opt)

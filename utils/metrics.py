@@ -71,6 +71,7 @@ def calculate_activation_statistics(activations):
 
 
 def calculate_diversity(activation, diversity_times):
+    print('----',activation.shape[0])
     assert len(activation.shape) == 2
     assert activation.shape[0] > diversity_times
     num_samples = activation.shape[0]
@@ -82,8 +83,10 @@ def calculate_diversity(activation, diversity_times):
 
 
 def calculate_multimodality(activation, multimodality_times):
+    print(' assert activation.shape[1] ------',activation.shape[1] )
     assert len(activation.shape) == 3
     assert activation.shape[1] > multimodality_times
+ 
     num_per_sent = activation.shape[1]
 
     first_dices = np.random.choice(num_per_sent, multimodality_times, replace=False)

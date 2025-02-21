@@ -14,13 +14,15 @@ from scripts.motion_process import *
 from utils.word_vectorizer import WordVectorizer, POS_enumerator
 
 def plot_t2m(data, save_dir, captions):
+    print('data..', data.shape)
     data = dataset.inv_transform(data)
 
     # print(ep_curves.shape)
     for i, (caption, joint_data) in enumerate(zip(captions, data)):
+        print('joint..',joint_data.shape)
         joint = recover_from_ric(torch.from_numpy(joint_data).float(), opt.joints_num).numpy()
         save_path = '%s_%02d'%(save_dir, i)
-        plot_3d_motion(save_path + '.mp4', paramUtil.t2m_kinematic_chain, joint, title=caption, fps=20)
+        # plot_3d_motion(save_path + '.mp4', paramUtil.t2m_kinematic_chain, joint, title=caption, fps=20)
 
 
 def loadDecompModel(opt):
@@ -114,6 +116,7 @@ if __name__ == '__main__':
     # mov_enc, mov_dec = loadDecompModel(opt)
 
     trainer = CompTrainerV6(opt, text_enc, seq_pri, seq_dec, att_layer, mov_dec, mov_enc=mov_enc)
+    print(mov_dec)
 
     dataset = Text2MotionDataset(opt, mean, std, split_file, w_vectorizer)
     dataset.reset_max_len(opt.start_mov_len * opt.unit_length)
@@ -126,7 +129,7 @@ if __name__ == '__main__':
 
     if opt.est_length:
         estimator = MotionLenEstimatorBiGRU(dim_word, dim_pos_ohot, 512, num_classes)
-        checkpoints = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, 'length_est_bigru', 'model', 'latest.tar'))
+        checkpoints = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, 'length_est_bigru', 'model', 'latest.tar'), map_location='cpu')
         estimator.load_state_dict(checkpoints['estimator'])
         estimator.to(opt.device)
         estimator.eval()
@@ -186,11 +189,16 @@ if __name__ == '__main__':
         captions = item['caption']
         gt_motions = item['gt_motion']
         joint_save_path = pjoin(opt.joint_dir, key)
+        print('joint_save_path,', joint_save_path)
         animation_save_path = pjoin(opt.animation_dir, key)
         os.makedirs(joint_save_path, exist_ok=True)
         os.makedirs(animation_save_path, exist_ok=True)
         np.save(pjoin(joint_save_path, 'gt_motions.npy'), gt_motions)
         plot_t2m(gt_motions, pjoin(animation_save_path, 'gt_motion'), captions)
+
+        gt_motions = dataset.inv_transform(gt_motions)
+        print('gt_motions', gt_motions.shape)
+        gt_motions= recover_from_ric(torch.from_numpy(gt_motions).float(), opt.joints_num).numpy()
         for t in range(opt.repeat_times):
             sub_dict = item['result_%02d'%t]
             motion = sub_dict['motion']

@@ -41,7 +41,8 @@ class MMGeneratedDataset(Dataset):
         # print(sort_indx)
         # print(m_lens[sort_indx])
         m_lens = m_lens[sort_indx]
-        motions = motions[sort_indx]
+        motions = motions[sort_indx] #[30,196,263], [30,512]
+        print('motions', motions.shape, 'm_lens ', m_lens.shape)
         return motions, m_lens
 
 
@@ -60,9 +61,7 @@ def get_motion_loader(opt_path, batch_size, ground_truth_dataset, mm_num_samples
         dataset = CompV6GeneratedDataset(opt, ground_truth_dataset, w_vectorizer, mm_num_samples, mm_num_repeats)
     else:
         raise KeyError('Dataset not recognized!!')
-
     mm_dataset = MMGeneratedDataset(opt, dataset, w_vectorizer)
-
     motion_loader = DataLoader(dataset, batch_size=batch_size, collate_fn=collate_fn, drop_last=True, num_workers=4)
     mm_motion_loader = DataLoader(mm_dataset, batch_size=1, num_workers=1)
 

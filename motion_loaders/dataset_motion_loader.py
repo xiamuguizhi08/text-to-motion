@@ -11,7 +11,7 @@ def get_dataset_motion_loader(opt_path, batch_size, device):
     # Configurations of T2M dataset and KIT dataset is almost the same
     if opt.dataset_name == 't2m' or opt.dataset_name == 'kit':
         print('Loading dataset %s ...' % opt.dataset_name)
-
+        print("opt.meta dir", opt.meta_dir)
         mean = np.load(pjoin(opt.meta_dir, 'mean.npy'))
         std = np.load(pjoin(opt.meta_dir, 'std.npy'))
 

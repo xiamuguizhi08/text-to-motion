@@ -53,7 +53,6 @@ class CompV6GeneratedDataset(Dataset):
 
     def __init__(self, opt, dataset, w_vectorizer, mm_num_samples, mm_num_repeats):
         assert mm_num_samples < len(dataset)
-        print(opt.model_dir)
 
         dataloader = DataLoader(dataset, batch_size=1, num_workers=1, shuffle=True)
         text_enc, seq_pri, seq_dec, att_layer, mov_enc, mov_dec, len_estimator = build_models(opt)
@@ -98,6 +97,7 @@ class CompV6GeneratedDataset(Dataset):
                     m_lens = mov_length * opt.unit_length
                     pred_motions, _, _ = trainer.generate(word_emb, pos_ohot, cap_lens, m_lens,
                                                           m_lens[0]//opt.unit_length, opt.dim_pose)
+                    # print("pred  motions", pred_motions.shape, 'pos ohot ', pos_ohot.shape, 'word_emb ', word_emb.shape, 'cap lens ', cap_lens, 'opt_unit length', opt.unit_length  )
                     if t == 0:
                         # print(m_lens)
                         # print(text_data)
@@ -165,4 +165,5 @@ class CompV6GeneratedDataset(Dataset):
             motion = np.concatenate([motion,
                                      np.zeros((self.opt.max_motion_length - m_length, motion.shape[1]))
                                      ], axis=0)
+        # print("word_embeddings, ",  word_embeddings.shape, "pos_one_hots", pos_one_hots.shape,  "sent_len", sent_len, 'motion ', motion.shape, 'm_length ', m_length)
         return word_embeddings, pos_one_hots, caption, sent_len, motion, m_length, '_'.join(tokens)

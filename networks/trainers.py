@@ -979,6 +979,7 @@ class TextMotionMatchTrainer(object):
         self.mis_motion_embedding = self.motion_embedding.clone()[new_idx]
         self.loss_neg = self.contrastive_loss(self.text_embedding, self.mis_motion_embedding, neg_labels)
         self.loss = self.loss_pos + self.loss_neg
+        
 
         loss_logs = OrderedDict({})
         loss_logs['loss'] = self.loss.item()
@@ -1006,7 +1007,7 @@ class TextMotionMatchTrainer(object):
 
         epoch = 0
         it = 0
-
+        print("######self.opt is continue", self.opt.is_continue)
         if self.opt.is_continue:
             model_dir = pjoin(self.opt.model_dir, 'latest.tar')
             epoch, it = self.resume(model_dir)

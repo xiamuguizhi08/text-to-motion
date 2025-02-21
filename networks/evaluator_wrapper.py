@@ -15,7 +15,7 @@ def build_models(opt):
                                       output_size=opt.dim_coemb_hidden,
                                       device=opt.device)
 
-    checkpoint = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, 'text_mot_match', 'model', 'finest.tar'),
+    checkpoint = torch.load(pjoin(opt.checkpoints_dir, opt.dataset_name, 'text_mot_match_22joints', 'model', 'finest.tar'),
                             map_location=opt.device)
     movement_enc.load_state_dict(checkpoint['movement_encoder'])
     text_enc.load_state_dict(checkpoint['text_encoder'])
@@ -67,9 +67,9 @@ class EvaluatorModelWrapper(object):
             m_lens = m_lens[align_idx]
 
             '''Movement Encoding'''
-            movements = self.movement_encoder(motions[..., :-4]).detach()
+            movements = self.movement_encoder(motions[..., :-4]).detach() #[3, 49, 512]
             m_lens = m_lens // self.opt.unit_length
-            motion_embedding = self.motion_encoder(movements, m_lens)
+            motion_embedding = self.motion_encoder(movements, m_lens) #[3, 512]
 
             '''Text Encoding'''
             text_embedding = self.text_encoder(word_embs, pos_ohot, cap_lens)

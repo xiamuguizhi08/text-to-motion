@@ -329,7 +329,7 @@ class Text2MotionDatasetV2(data.Dataset):
         elif coin2 == 'single':
             m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
         idx = random.randint(0, len(motion) - m_length)
-        motion = motion[idx:idx+m_length]
+        motion = motion[idx:idx+m_length]  #[T, 251]
 
         "Z Normalization"
         motion = (motion - self.mean) / self.std
