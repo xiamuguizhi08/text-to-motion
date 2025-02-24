@@ -525,7 +525,7 @@ def process_files(input_folder, output_folder):
  
 if __name__ == '__main__':
     
-    pred_name = "hu_finetune_EXP_amass_not_abs_2-19-13-53-49"
+    pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
     dataset_opt_path = './checkpoints/t2m/opt.txt'
     motion_loader_name = f'{pred_name}'
 
@@ -542,12 +542,12 @@ if __name__ == '__main__':
     replication_times = 5
     batch_size = 30
 
-    input_folder = "/liujinxin/code/Hu/dataset/HumanML3D_sample/amass_15_1000/hu_finetune_EXP_amass_not_abs_2-19-13-53-49/checkpoint-30000"
-    output_folder = "/liujinxin/code/text-to-motion/dataset/hu_finetune_EXP_amass_not_abs_2-19-13-53-49/checkpoint-30000"
+    input_folder = "/liujinxin/code/text-to-motion/data/checkpoint-30000"
+    output_folder = "/liujinxin/code/text-to-motion/dataset/hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35/checkpoint-30000"
 
     # process_files(input_folder, output_folder)
 
-    pred_root=f'./hu_finetune_EXP_amass_not_abs_2-19-13-53-49/checkpoint-30000'
+    pred_root=f'./hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35/checkpoint-30000'
     gt_loader, gt_dataset= get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
     wrapper_opt = get_opt(dataset_opt_path, device)
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
