@@ -513,8 +513,7 @@ def process_files(input_folder, output_folder):
         print('Processing:', dir_name)
         input_folder_new = os.path.join(input_folder, dir_name)
         output_folder_new = os.path.join(output_folder, dir_name)
-        os.makedirs(output_folder_new, exist_ok=True)
-        
+        os.makedirs(output_folder_new, exist_ok=True) 
    
         process_npy_files_263(input_folder_new, output_folder_new)
 
@@ -533,7 +532,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # 处理文件转换
-    # process_files(args.input_folder, args.output_folder)
+    process_files(args.input_folder, args.output_folder)
 
     # 设置其他参数（原硬编码部分）
     pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
