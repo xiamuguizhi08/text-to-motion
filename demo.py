@@ -1,4 +1,5 @@
 import os
+import argparse
 import codecs as cs
 import numpy as np
 import random
@@ -415,7 +416,7 @@ def get_metric_statistics(values):
     conf_interval = 1.96 * std / np.sqrt(replication_times)
     return mean, conf_interval
 
-def evaluation(log_file):
+def evaluation(log_file,pred_root):
     with open(log_file, 'w') as f:
         all_metrics = OrderedDict({'Matching Score': OrderedDict({}),
                                    'R_precision': OrderedDict({}),
@@ -524,41 +525,42 @@ def process_files(input_folder, output_folder):
 
  
 if __name__ == '__main__':
-    
+    # 添加命令行参数解析
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input_folder', type=str, required=True, help='输入文件夹路径')
+    parser.add_argument('--output_folder', type=str, required=True, help='输出文件夹路径')
+    parser.add_argument('--pred_root', type=str, required=True, help='预测根目录路径')
+    args = parser.parse_args()
+
+    # 处理文件转换
+    # process_files(args.input_folder, args.output_folder)
+
+    # 设置其他参数（原硬编码部分）
     pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
     dataset_opt_path = './checkpoints/t2m/opt.txt'
     motion_loader_name = f'{pred_name}'
 
     device_id = 0
-    device = torch.device('cuda:%d'%device_id if torch.cuda.is_available() else 'cpu')
-    torch.cuda.set_device(device_id)
+    device = torch.device(f'cuda:{device_id}' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        torch.cuda.set_device(device_id)
 
-
-    mm_num_samples = 30 
+    # 设置评估参数
+    mm_num_samples = 30
     mm_num_repeats = 30
     mm_num_times = 10
-
     diversity_times = 200
     replication_times = 5
     batch_size = 30
 
-    input_folder = "/liujinxin/code/text-to-motion/data/checkpoint-30000"
-    output_folder = "/liujinxin/code/text-to-motion/dataset/hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35/checkpoint-30000"
-
-    # process_files(input_folder, output_folder)
-
-    pred_root=f'./hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35/checkpoint-30000'
-    gt_loader, gt_dataset= get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
+    # 初始化评估组件
+    gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
     wrapper_opt = get_opt(dataset_opt_path, device)
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
 
-    log_file = f'./log/{pred_root[2:]}.log'
+    # 设置日志路径
+    log_file = f'./log/{args.pred_root.replace("./", "")}.log'
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
-    log_dir = os.path.dirname(log_file)
-
-   
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    evaluation(log_file)
-    print(pred_root)
- 
+    # 调用评估函数并传递args.pred_root参数
+    evaluation(log_file, args.pred_root)
