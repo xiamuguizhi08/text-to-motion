@@ -15,7 +15,9 @@ from utils.get_opt import get_opt
 from utils.metrics import *
 from utils.word_vectorizer import WordVectorizer
 from utils.word_vectorizer import POS_enumerator
-
+import argparse
+import os
+import torch
 from tqdm import tqdm
 from networks.modules import *
 import sys
@@ -387,8 +389,8 @@ def evaluate_diversity(activation_dict, file):
         print('##########motion embeddings ', motion_embeddings.shape)
         diversity = calculate_diversity(motion_embeddings, diversity_times)
         eval_dict[model_name] = diversity
-        print(f'---> [{model_name}] Diversity: {diversity:.4f}')
-        # print(f'---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
+        # print(f'---> [{model_name}] Diversity: {diversity:.4f}')
+        print(f'---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
     return eval_dict
 
 
@@ -486,23 +488,22 @@ def evaluation(log_file,pred_root):
 
         # print(all_metrics['Diversity'])
         for metric_name, metric_dict in all_metrics.items():
-            print('========== %s Summary ==========' % metric_name)
-            # print('========== %s Summary ==========' % metric_name, file=f, flush=True)
+            # print('========== %s Summary ==========' % metric_name)
+            print('========== %s Summary ==========' % metric_name, file=f, flush=True)
 
             for model_name, values in metric_dict.items():
                 # print(metric_name, model_name)
                 mean, conf_interval = get_metric_statistics(np.array(values))
                 # print(mean, mean.dtype)
                 if isinstance(mean, np.float64) or isinstance(mean, np.float32):
-                    print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}')
-                    # print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
+                    # print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}')
+                    print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
                 elif isinstance(mean, np.ndarray):
                     line = f'---> [{model_name}]'
                     for i in range(len(mean)):
                         line += '(top %d) Mean: %.4f CInt: %.4f;' % (i+1, mean[i], conf_interval[i])
                     print(line)
-                    # print(line, file=f, flush=True)
-
+                    print(line, file=f, flush=True)
 
 
 
@@ -524,6 +525,7 @@ def process_files(input_folder, output_folder):
 
  
 if __name__ == '__main__':
+
     # 添加命令行参数解析
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_folder', type=str, required=True, help='输入文件夹路径')
@@ -531,42 +533,62 @@ if __name__ == '__main__':
     parser.add_argument('--pred_root', type=str, required=True, help='预测根目录路径')
     args = parser.parse_args()
 
-    # 处理文件转换
-    process_files(args.input_folder, args.output_folder)
+    # action_types = ["test_caption_only",
+    #                 "test_caption",
+    #                 "test_caption_framelen",
+    #                 "test_caption_seclen"]
+    # 获取 --input_folder 目录下的子文件夹作为 action_types
+    if os.path.exists(args.input_folder) and os.path.isdir(args.input_folder):
+        action_types = [d for d in os.listdir(args.input_folder) if os.path.isdir(os.path.join(args.input_folder, d))]
+    else:
+        raise ValueError(f"输入文件夹 {args.input_folder} 不存在或不是一个有效的文件夹")
 
-    # process_npy_files_263(args.input_folder, args.output_folder)
-    
-    pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
-    dataset_opt_path = './checkpoints/t2m/opt.txt'
-    motion_loader_name = f'{pred_name}'
+    # 打印 action_types 以确认
+    print("Action Types:", action_types)
 
-    device_id = 0
-    device = torch.device(f'cuda:{device_id}' if torch.cuda.is_available() else 'cpu')
-    if torch.cuda.is_available():
-        torch.cuda.set_device(device_id)
+    for i in action_types:
+        # 生成新的路径
+        input_path = os.path.join(args.input_folder, i)
+        output_path = os.path.join(args.output_folder, i)
+        pred_path = os.path.join(args.pred_root, i)
 
-    # 设置评估参数
-    mm_num_samples = 30
-    mm_num_repeats = 30
-    mm_num_times = 10
-    diversity_times = 200
-    replication_times = 5
-    batch_size = 30
+        # 创建输出目录（如果不存在）
+        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(pred_path, exist_ok=True)
 
-    # 初始化评估组件
-    gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
-    # gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/train_npy_1000', batch_size, device)
-    
-    wrapper_opt = get_opt(dataset_opt_path, device)
-    eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
+        # 处理文件转换
+        process_files(input_path, output_path)
 
-    # 设置日志路径
-    log_file = f'./log/{args.pred_root.replace("./", "")}.log'
-    # from datetime import datetime
+        # process_npy_files_263(input_path, output_path)
 
-    # log_file = f'./log/{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
-    
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
+        dataset_opt_path = './checkpoints/t2m/opt.txt'
+        motion_loader_name = f'{pred_name}'
 
-    # 调用评估函数并传递args.pred_root参数
-    evaluation(log_file, args.pred_root)
+        device_id = 0
+        device = torch.device(f'cuda:{device_id}' if torch.cuda.is_available() else 'cpu')
+        if torch.cuda.is_available():
+            torch.cuda.set_device(device_id)
+
+        # 设置评估参数
+        mm_num_samples = 30
+        mm_num_repeats = 30
+        mm_num_times = 10
+        diversity_times = 200
+        replication_times = 5
+        batch_size = 30
+
+        # 初始化评估组件
+        gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
+        # gt_loader, gt_dataset = get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/train_npy_1000', batch_size, device)
+
+        wrapper_opt = get_opt(dataset_opt_path, device)
+        eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
+
+        # 设置日志路径
+        log_file = f'./log/{pred_path.replace("./", "")}.log'
+        
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+        # 调用评估函数并传递 pred_path 参数
+        evaluation(log_file, pred_path)
