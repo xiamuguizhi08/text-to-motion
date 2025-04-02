@@ -86,7 +86,8 @@ class Text2MotionDatasetV2(data.Dataset):
 
                     else:
                         try:
-                            n_motion = motion[int(f_tag*20) : int(to_tag*20)]
+                            # n_motion = motion[int(f_tag*20) : int(to_tag*20)]
+                            n_motion = motion
                             if (len(n_motion)) < min_motion_len or (len(n_motion) >= 200):
                                 continue
                             # if len(n_motion) >= 197:
@@ -164,26 +165,28 @@ class Text2MotionDatasetV2(data.Dataset):
         pos_one_hots = np.concatenate(pos_one_hots, axis=0)
         word_embeddings = np.concatenate(word_embeddings, axis=0)
 
-        # Crop the motions in to times of 4, and introduce small variations
-        if self.opt.unit_length < 10:
-            coin2 = np.random.choice(['single', 'single', 'double'])
-        else:
-            coin2 = 'single'
+        # # Crop the motions in to times of 4, and introduce small variations
+        # if self.opt.unit_length < 10:
+        #     coin2 = np.random.choice(['single', 'single', 'double'])
+        # else:
+        #     coin2 = 'single'
 
-        if coin2 == 'double':
-            m_length = (m_length // self.opt.unit_length - 1) * self.opt.unit_length
-        elif coin2 == 'single':
-            m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
-        idx = random.randint(0, len(motion) - m_length)
-        motion = motion[idx:idx+m_length]  #[T, 251]
+        # if coin2 == 'double':
+        #     m_length = (m_length // self.opt.unit_length - 1) * self.opt.unit_length
+        # elif coin2 == 'single':
+        #     m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
+        # idx = random.randint(0, len(motion) - m_length)
+        # motion = motion[idx:idx+m_length]  #[T, 251]
 
-        "Z Normalization"
+        # "Z Normalization"
         # motion = (motion - self.mean) / self.std
 
         if m_length < self.max_motion_length:
             motion = np.concatenate([motion,
                                      np.zeros((self.max_motion_length - m_length, motion.shape[1]))
                                      ], axis=0)
+        else:
+            motion = motion[:self.max_motion_length]
         # print(word_embeddings.shape, motion.shape)
         # print(tokens)
         return word_embeddings, pos_one_hots, caption, sent_len, motion, m_length, '_'.join(tokens)

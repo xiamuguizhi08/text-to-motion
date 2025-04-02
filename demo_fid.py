@@ -5,7 +5,8 @@ import random
 from collections import OrderedDict
 from datetime import datetime
 from torch.utils.data._utils.collate import default_collate
-
+import os
+import torch
 from os.path import join as pjoin
 from torch.utils import data
 from torch.utils.data import DataLoader
@@ -16,6 +17,10 @@ from utils.word_vectorizer import POS_enumerator
 
 from tqdm import tqdm
 from networks.modules import *
+import sys
+sys.path.append("/liujinxin/code/Hu/dataset/HumanML3D_sample/")  
+from data_converter_15joints import process_npy_files_263  
+
 
 
 def collate_fn(batch):
@@ -154,18 +159,18 @@ class Text2MotionDatasetV2(data.Dataset):
         pos_one_hots = np.concatenate(pos_one_hots, axis=0)
         word_embeddings = np.concatenate(word_embeddings, axis=0)
 
-        # Crop the motions in to times of 4, and introduce small variations
-        if self.opt.unit_length < 10:
-            coin2 = np.random.choice(['single', 'single', 'double'])
-        else:
-            coin2 = 'single'
+        # # Crop the motions in to times of 4, and introduce small variations
+        # if self.opt.unit_length < 10:
+        #     coin2 = np.random.choice(['single', 'single', 'double'])
+        # else:
+        #     coin2 = 'single'
 
-        if coin2 == 'double':
-            m_length = (m_length // self.opt.unit_length - 1) * self.opt.unit_length
-        elif coin2 == 'single':
-            m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
-        idx = random.randint(0, len(motion) - m_length)
-        motion = motion[idx:idx+m_length]  #[T, 251]
+        # if coin2 == 'double':
+        #     m_length = (m_length // self.opt.unit_length - 1) * self.opt.unit_length
+        # elif coin2 == 'single':
+        #     m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
+        # idx = random.randint(0, len(motion) - m_length)
+        # motion = motion[idx:idx+m_length]  #[T, 251]
 
         "Z Normalization"
         # motion = (motion - self.mean) / self.std
@@ -183,14 +188,8 @@ class Text2MotionDatasetV2(data.Dataset):
 def get_dataset_motion_loader(opt_path, data_path, batch_size, device):
     opt = get_opt(opt_path, device)
     opt.data_root = './dataset/'
-    # opt.text_dir = './dataset/test/test_txt'
-    # opt.text_dir = '/liujinxin/code/text-to-motion/human_labeling15/texts_new'
-    #opt.data_root = './dataset/'
-    opt.text_dir = '/liujinxin/code/text-to-motion/dataset/test/test_txt'
-
     opt.text_dir ='/liujinxin/code/text-to-motion/dataset/test/test_txt_1000'
 
-    # opt.text_dir='/liujinxin/code/text-to-motion/dataset/test/gt_vis_txt'
     # Configurations of T2M dataset and KIT dataset is almost the same
     if opt.dataset_name == 't2m':
         print('Loading dataset %s ...' % opt.dataset_name)
@@ -263,7 +262,7 @@ class EvaluatorModelWrapper(object):
         self.movement_encoder.eval()
 
     # Please note that the results does not following the order of inputs
-    # [30,22,300] [30,22,15] torch.Size([30])  torch.Size([30, 196, 179])
+   
     def get_co_embeddings(self, word_embs, pos_ohot, cap_lens, motions, m_lens):
         with torch.no_grad():
             word_embs = word_embs.detach().to(self.device).float()
@@ -286,10 +285,6 @@ class EvaluatorModelWrapper(object):
 
     # Please note that the results does not following the order of inputs
     def get_motion_embeddings(self, motions, m_lens):
-        # motions.shape
-        # torch.Size([30, 196, 179])
-        # m_lens.shape
-        # torch.Size([30])
         with torch.no_grad():
             motions = motions.detach().to(self.device).float()
 
@@ -306,7 +301,7 @@ class EvaluatorModelWrapper(object):
         return motion_embedding
 
 
-def evaluate_matching_score(motion_loader):
+def evaluate_matching_score(motion_loader,f):
     match_score_dict = OrderedDict({})
     R_precision_dict = OrderedDict({})
     activation_dict = OrderedDict({})
@@ -346,7 +341,7 @@ def evaluate_matching_score(motion_loader):
         R_precision_dict[motion_loader_name] = R_precision
         activation_dict[motion_loader_name] = all_motion_embeddings
 
-    print(f'---> [{motion_loader_name}] Matching Score: {matching_score:.4f}')
+    print(f'---> [{motion_loader_name}] Matching Score: {matching_score:.4f}', file=f, flush=True)
 
     line = f'---> [{motion_loader_name}] R_precision: '
     for i in range(len(R_precision)):
@@ -362,10 +357,6 @@ def evaluate_fid(groundtruth_loader, activation_dict, file):
     with torch.no_grad():
         for idx, batch in enumerate(groundtruth_loader):
             _, _, _, sent_lens, motions, m_lens, _ = batch
-            # motions.shape
-            # torch.Size([30, 196, 179])
-            # m_lens.shape
-            # torch.Size([30])
             motion_embeddings = eval_wrapper.get_motion_embeddings(
                 motions=motions,
                 m_lens=m_lens
@@ -404,14 +395,6 @@ def evaluate_multimodality(mm_motion_loader, file):
     mm_motion_embeddings = []
     with torch.no_grad():
         for idx, batch in enumerate(mm_motion_loader):
-            # (1, mm_replications, dim_pos)
-            #motions, m_lens = batch
-          
-                # motions.shape
-                # torch.Size([30, 196, 179])
-                # m_lens.shape
-                # torch.Size([30])
-
             _, _, _, sent_lens, motions, m_lens, _ = batch
             motion_embeddings = eval_wrapper.get_motion_embeddings(motions, m_lens)
             mm_motion_embeddings.append(motion_embeddings.unsqueeze(0))
@@ -449,15 +432,15 @@ def evaluation(log_file):
 
             print(f'==================== Replication {replication} ====================')
             print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
-            mat_score_dict, R_precision_dict, acti_dict = evaluate_matching_score(pred_loader)
+            # print(f'Time: {datetime.now()}', file=f, flush=True)
+            mat_score_dict, R_precision_dict, acti_dict = evaluate_matching_score(pred_loader,f)
 
             print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            # print(f'Time: {datetime.now()}', file=f, flush=True)
             fid_score_dict = evaluate_fid(gt_loader, acti_dict, f)
 
             print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            # print(f'Time: {datetime.now()}', file=f, flush=True)
             div_score_dict = evaluate_diversity(acti_dict, f)
 
             print(f'Time: {datetime.now()}')
@@ -517,9 +500,32 @@ def evaluation(log_file):
                     print(line)
                     print(line, file=f, flush=True)
 
+
+import os
+import torch
+
+
+
+def process_files(input_folder, output_folder):
+    """处理 .npy 文件"""
+    for dir_name in filter(lambda d: not d.endswith(('.yaml', '.log')), os.listdir(input_folder)):
+        print('Processing:', dir_name)
+        input_folder_new = os.path.join(input_folder, dir_name)
+        output_folder_new = os.path.join(output_folder, dir_name)
+        os.makedirs(output_folder_new, exist_ok=True)
+        
+   
+        process_npy_files_263(input_folder_new, output_folder_new)
+
+
+
+
+
+
+ 
 if __name__ == '__main__':
     
-    pred_name = "amass_1000_hu_sft_union15_1-17-3-51-1"
+    pred_name = "hu_finetune_EXP_amass_not_abs_4_2-17-17-29-35"
     dataset_opt_path = './checkpoints/t2m/opt.txt'
     motion_loader_name = f'{pred_name}'
 
@@ -528,9 +534,6 @@ if __name__ == '__main__':
     torch.cuda.set_device(device_id)
 
 
-    
-# ?------
-
     mm_num_samples = 30 
     mm_num_repeats = 30
     mm_num_times = 10
@@ -538,17 +541,13 @@ if __name__ == '__main__':
     diversity_times = 200
     replication_times = 5
     batch_size = 30
-    # mm_num_samples = 20 
-    # mm_num_repeats = 20
-    # mm_num_times = 10
 
-    # diversity_times = 10
-    # replication_times = 5
-    # batch_size = 20
+    input_folder = "/liujinxin/code/text-to-motion/dataset/amass_15_1000_44/hu_pretrain_EXP_all_std_3-5-21-51-4/checkpoint-72000"
+    output_folder = "/liujinxin/code/text-to-motion/dataset/hu_pretrain_EXP_all_std_3-5-21-51-4/checkpoint-72000"
 
-#   /liujinxin/code/text-to-motion/dataset/hu_pretrain_EXP_all_2-13-14-18-33/checkpoint-108000
-    # pred_root = f'./test/pred_joint_vecs/vis_8b2'
-    pred_root=f'./hu_finetune_EXP_amass_not_abs_2-19-13-53-49/checkpoint-36000'
+    process_files(input_folder, output_folder)
+
+    pred_root=f'./hu_pretrain_EXP_all_std_3-5-21-51-4/checkpoint-72000'
     gt_loader, gt_dataset= get_dataset_motion_loader(dataset_opt_path, 'test/gt_joint_vecs/test_npy_1000', batch_size, device)
     wrapper_opt = get_opt(dataset_opt_path, device)
     eval_wrapper = EvaluatorModelWrapper(wrapper_opt)
@@ -562,4 +561,4 @@ if __name__ == '__main__':
         os.makedirs(log_dir)
     evaluation(log_file)
     print(pred_root)
-    # animation_4_user_study('./user_study_t2m/')
+ 

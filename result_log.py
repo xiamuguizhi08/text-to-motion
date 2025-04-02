@@ -2,9 +2,9 @@ import os
 import csv
 import re
 
-# 日志文件所在目录
-log_dir = "/liujinxin/code/text-to-motion/log/hu_GPRO_union15_3-11-16-53-51"
-csv_filename = "/liujinxin/code/text-to-motion/log/hu_GPRO_union15_3-11-16-53-51/hu_GPRO_union15_3-11-16-53-51.csv"
+
+log_dir  = "/liujinxin/code/text-to-motion/log/hu_pretrain_70_select_3-19-11-8-15"  # 🔹 请修改为你的日志目录路径
+csv_filename = "/liujinxin/code/text-to-motion/log/hu_pretrain_70_select_3-19-11-8-15/res.csv"
 
 # 正则表达式
 pattern_section = re.compile(r"======== (.+)")

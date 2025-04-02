@@ -3,12 +3,26 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [{
+    "configurations": [
+        {
         "name": "Python Debugger: Current File",
         "type": "debugpy",
         "request": "launch",
         "program": "${file}",
         "console": "integratedTerminal",
         "python": "/liujinxin/anaconda3/envs/rdt/bin/python"
-    }]
+        },
+        {
+            "name": "Python: eval_n.py",
+            "type": "python",
+            "request": "launch",
+            "program": "/liujinxin/code/text-to-motion/eval_n_copy.py",
+            "python": "/liujinxin/anaconda3/envs/RDT/bin/python",
+            "args": [
+                "--input_folder", "/liujinxin/code/text-to-motion/dataset/amass_15_1000_2/hu_GPRO_union15_3-11-21-12-57/checkpoint-600",
+                "--output_folder", "/liujinxin/code/text-to-motion/dataset/hu_GPRO_union15_3-11-21-12-57/checkpoint-600",
+                "--pred_root", "./hu_GPRO_union15_3-11-21-12-57/checkpoint-600"
+            ]
+        }
+    ]
 }

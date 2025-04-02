@@ -318,9 +318,9 @@ def evaluate_matching_score(motion_loader):
         R_precision_dict[motion_loader_name] = R_precision
         activation_dict[motion_loader_name] = all_motion_embeddings
 
-    print(f'---> [{motion_loader_name}] Matching Score: {matching_score:.4f}')
+    print(f'{pred_dir}---> [{motion_loader_name}] Matching Score: {matching_score:.4f}')
 
-    line = f'---> [{motion_loader_name}] R_precision: '
+    line = f'{pred_dir}---> [{motion_loader_name}] R_precision: '
     for i in range(len(R_precision)):
         line += '(top %d): %.4f ' % (i+1, R_precision[i])
         print(line)
@@ -347,8 +347,8 @@ def evaluate_fid(groundtruth_loader, activation_dict, file):
         mu, cov = calculate_activation_statistics(motion_embeddings)
         # print(mu)
         fid = calculate_frechet_distance(gt_mu, gt_cov, mu, cov)
-        print(f'---> [{model_name}] FID: {fid:.4f}')
-        print(f'---> [{model_name}] FID: {fid:.4f}', file=file, flush=True)
+        print(f'{pred_dir}---> [{model_name}] FID: {fid:.4f}')
+        print(f'{pred_dir}---> [{model_name}] FID: {fid:.4f}', file=file, flush=True)
         eval_dict[model_name] = fid
     return eval_dict
 
@@ -358,8 +358,8 @@ def evaluate_diversity(activation_dict, file):
     for model_name, motion_embeddings in activation_dict.items():
         diversity = calculate_diversity(motion_embeddings, diversity_times)
         eval_dict[model_name] = diversity
-        print(f'---> [{model_name}] Diversity: {diversity:.4f}')
-        print(f'---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
+        print(f'{pred_dir}---> [{model_name}] Diversity: {diversity:.4f}')
+        print(f'{pred_dir}---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
     return eval_dict
 
 
@@ -379,8 +379,8 @@ def evaluate_multimodality(mm_motion_loader, file):
     else:
         mm_motion_embeddings = torch.cat(mm_motion_embeddings, dim=0).cpu().numpy() #358,3,512
         multimodality = calculate_multimodality(mm_motion_embeddings, mm_num_times)
-    print(f'---> [{motion_loader_name}] Multimodality: {multimodality:.4f}')
-    print(f'---> [{motion_loader_name}] Multimodality: {multimodality:.4f}', file=file, flush=True)
+    print(f'{pred_dir}---> [{motion_loader_name}] Multimodality: {multimodality:.4f}')
+    print(f'{pred_dir}---> [{motion_loader_name}] Multimodality: {multimodality:.4f}', file=file, flush=True)
     eval_dict[motion_loader_name] = multimodality
     return eval_dict
 
@@ -406,20 +406,20 @@ def evaluation(log_file):
             pred_loader, mm_motion_loader= get_dataset_motion_loader(dataset_opt_path, f'{pred_root}/{pred_dir}', batch_size, device)
 
             print(f'==================== Replication {replication} ====================')
-            print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            print(f'{pred_dir}Time: {datetime.now()}')
+            print(f'{pred_dir}Time: {datetime.now()}', file=f, flush=True)
             mat_score_dict, R_precision_dict, acti_dict = evaluate_matching_score(pred_loader)
 
-            print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            print(f'{pred_dir}Time: {datetime.now()}')
+            print(f'{pred_dir}Time: {datetime.now()}', file=f, flush=True)
             fid_score_dict = evaluate_fid(gt_loader, acti_dict, f)
 
-            print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            print(f'{pred_dir}Time: {datetime.now()}')
+            print(f'{pred_dir}Time: {datetime.now()}', file=f, flush=True)
             div_score_dict = evaluate_diversity(acti_dict, f)
 
-            print(f'Time: {datetime.now()}')
-            print(f'Time: {datetime.now()}', file=f, flush=True)
+            print(f'{pred_dir}Time: {datetime.now()}')
+            print(f'{pred_dir}Time: {datetime.now()}', file=f, flush=True)
             mm_score_dict = evaluate_multimodality(pred_loader, f)
 
             print(f'!!! DONE !!!')
@@ -466,10 +466,10 @@ def evaluation(log_file):
                 mean, conf_interval = get_metric_statistics(np.array(values))
                 # print(mean, mean.dtype)
                 if isinstance(mean, np.float64) or isinstance(mean, np.float32):
-                    print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}')
-                    print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
+                    print(f'{pred_dir}---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}')
+                    print(f'{pred_dir}---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
                 elif isinstance(mean, np.ndarray):
-                    line = f'---> [{model_name}]'
+                    line = f'{pred_dir}---> [{model_name}]'
                     for i in range(len(mean)):
                         line += '(top %d) Mean: %.4f CInt: %.4f;' % (i+1, mean[i], conf_interval[i])
                     print(line)

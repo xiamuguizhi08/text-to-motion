@@ -349,7 +349,7 @@ def evaluate_matching_score(motion_loader,file):
     line = f'---> [{motion_loader_name}] R_precision: '
     for i in range(len(R_precision)):
         line += '(top %d): %.4f ' % (i+1, R_precision[i])
-        print(line)
+        print(line, file=file, flush=True)
 
     return match_score_dict, R_precision_dict, activation_dict
 
@@ -388,7 +388,7 @@ def evaluate_diversity(activation_dict, file):
         diversity = calculate_diversity(motion_embeddings, diversity_times)
         eval_dict[model_name] = diversity
         print(f'---> [{model_name}] Diversity: {diversity:.4f}')
-        # print(f'---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
+        print(f'---> [{model_name}] Diversity: {diversity:.4f}', file=file, flush=True)
     return eval_dict
 
 
@@ -487,7 +487,7 @@ def evaluation(log_file,pred_root):
         # print(all_metrics['Diversity'])
         for metric_name, metric_dict in all_metrics.items():
             print('========== %s Summary ==========' % metric_name)
-            # print('========== %s Summary ==========' % metric_name, file=f, flush=True)
+            print('========== %s Summary ==========' % metric_name, file=f, flush=True)
 
             for model_name, values in metric_dict.items():
                 # print(metric_name, model_name)
@@ -495,13 +495,13 @@ def evaluation(log_file,pred_root):
                 # print(mean, mean.dtype)
                 if isinstance(mean, np.float64) or isinstance(mean, np.float32):
                     print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}')
-                    # print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
+                    print(f'---> [{model_name}] Mean: {mean:.4f} CInterval: {conf_interval:.4f}', file=f, flush=True)
                 elif isinstance(mean, np.ndarray):
                     line = f'---> [{model_name}]'
                     for i in range(len(mean)):
                         line += '(top %d) Mean: %.4f CInt: %.4f;' % (i+1, mean[i], conf_interval[i])
                     print(line)
-                    # print(line, file=f, flush=True)
+                    print(line, file=f, flush=True)
 
 
 
